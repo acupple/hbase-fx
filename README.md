@@ -2,7 +2,7 @@
 Simple Hbase ORM
 
 # usage:
-``java
+```java
 public static void main(String[] args){
     HFxClient hFxClient = new HFxClient("127.0.0.1:2181", "/hbase");
     hFxClient.creqteTable(Log.class);
@@ -20,4 +20,4 @@ public static void main(String[] args){
 
     System.out.println(log1.getMessage());
 }
-``
+```
