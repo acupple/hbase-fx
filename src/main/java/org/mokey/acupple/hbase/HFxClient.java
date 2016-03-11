@@ -53,8 +53,7 @@ public class HFxClient {
 
     public void createTable(Class<? extends HBase> clazz){
         TableMeta tableMeta = getTableMeta(clazz);
-        try {
-            Admin admin = connection.getAdmin();
+        try (Admin admin = connection.getAdmin()){
             if(admin.tableExists(tableMeta.getHtableName())){
                 System.out.println("Table " + tableMeta.getHtableName().getNameAsString() + " is already existed");
                 return;
@@ -66,19 +65,20 @@ public class HFxClient {
         }
     }
 
-    public void insert(HBase base){
+    public void insert(HBase base) throws Exception {
         TableMeta tableMeta = getTableMeta(base.getClass());
         Put put = tableMeta.getPut(base);
-        try {
-            Table table = connection.getTable(tableMeta.getHtableName());
-            if(put != null)
+        try(Table table = connection.getTable(tableMeta.getHtableName())){
+            if(put != null) {
                 table.put(put);
+            }
         }catch (Exception ex){
-            ex.printStackTrace();
+            throw ex;
         }
+
     }
 
-    public void insert(List<? extends  HBase> list){
+    public void insert(List<? extends  HBase> list) throws Exception{
         if(list != null && !list.isEmpty()){
             TableMeta tableMeta = getTableMeta(list.get(0).getClass());
             List<Put> puts = Lists.newArrayList();
@@ -88,32 +88,32 @@ public class HFxClient {
                     puts.add(put);
                 }
             }
-            try {
-                Table table = connection.getTable(tableMeta.getHtableName());
+            try (Table table = connection.getTable(tableMeta.getHtableName())){
                 table.put(puts);
-            }catch (Exception ex){
-                ex.printStackTrace();
             }
         }
     }
 
-    public <T extends HBase> T get(byte[] rowkey, Class<? extends HBase> clazz){
+    public void increment(HBase base) throws Exception{
+        TableMeta tableMeta = getTableMeta(base.getClass());
+        try(Table table = connection.getTable(tableMeta.getHtableName())){
+            Increment increment = tableMeta.getIncrement(base);
+            table.increment(increment);
+        }
+    }
+
+    public <T extends HBase> T get(byte[] rowkey, Class<? extends HBase> clazz) throws Exception{
         if(rowkey == null)
             return null;
         TableMeta tableMeta = getTableMeta(clazz);
         Get get = new Get(rowkey);
-        try {
-            Table table = connection.getTable(tableMeta.getHtableName());
+        try (Table table = connection.getTable(tableMeta.getHtableName())){
             Result result = table.get(get);
             return (T)tableMeta.parse(result);
-        }catch (Exception ex){
-            ex.printStackTrace();
         }
-
-        return null;
     }
 
-    public <T extends HBase>  List<T> search(List<byte[]> rowkeys, FilterBase filter, Class<? extends HBase> clazz){
+    public <T extends HBase>  List<T> search(List<byte[]> rowkeys, FilterBase filter, Class<? extends HBase> clazz) throws Exception{
         TableMeta tableMeta = getTableMeta(clazz);
 
         List<Get> gets = Lists.newArrayList();
@@ -126,8 +126,7 @@ public class HFxClient {
         }
 
         List<T> hBaseList = Lists.newArrayList();
-        try {
-            Table table = connection.getTable(tableMeta.getHtableName());
+        try (Table table = connection.getTable(tableMeta.getHtableName())){
             Result[] results = table.get(gets);
             for (Result rs: results){
                 HBase hBase = tableMeta.parse(rs);
@@ -135,18 +134,16 @@ public class HFxClient {
                     hBaseList.add((T)hBase);
                 }
             }
-        }catch (Exception ex){
-            ex.printStackTrace();
         }
 
         return hBaseList;
     }
 
-    public <T extends HBase> List<T> scan(byte[] startRow, byte[] stopRow, Class<? extends HBase> clazz){
+    public <T extends HBase> List<T> scan(byte[] startRow, byte[] stopRow, Class<? extends HBase> clazz)
+            throws Exception{
         TableMeta tableMeta = getTableMeta(clazz);
         List<T> list = Lists.newArrayList();
-        try {
-            Table table = connection.getTable(tableMeta.getHtableName());
+        try(Table table = connection.getTable(tableMeta.getHtableName())){
             ResultScanner results = table.getScanner(new Scan(startRow, stopRow));
             for (Result rs: results){
                 T hBase = (T)tableMeta.parse(rs);
@@ -154,24 +151,19 @@ public class HFxClient {
                     list.add(hBase);
                 }
             }
-        }catch (Exception ex){
-            ex.printStackTrace();
         }
 
         return list;
     }
 
-    public void deleteTable(Class<HBase> clazz){
+    public void deleteTable(Class<HBase> clazz) throws Exception{
         TableMeta tableMeta = getTableMeta(clazz);
-        try {
-            Admin admin = connection.getAdmin();
+        try(Admin admin = connection.getAdmin()) {
             if(admin.tableExists(tableMeta.getHtableName())){
                 admin.disableTable(tableMeta.getHtableName());
                 admin.deleteTable(tableMeta.getHtableName());
             }
 
-        }catch (Exception ex){
-            ex.printStackTrace();
         }
     }
 

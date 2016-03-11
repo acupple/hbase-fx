@@ -3,13 +3,15 @@ package org.mokey.acupple.hbase;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Increment;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.mokey.acupple.hbase.annotations.Table;
+import org.mokey.acupple.dashcam.hbase.annotations.Table;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by enousei on 3/10/16.
@@ -81,6 +83,22 @@ public class TableMeta {
             e.printStackTrace();
         }
         return instance;
+    }
+
+    public Increment getIncrement(HBase base){
+        Increment increment = new Increment(base.getRowKey());
+        for (FieldMeta field: fieldMap.values()){
+            try {
+                if(field.isIncrement()){
+                    long amount = field.getField().getLong(base);
+                    increment.addColumn(field.getHfamily(), field.getQualifier(), amount);
+                }
+            }catch (Exception ex){
+                ex.printStackTrace();
+            }
+        }
+
+        return increment;
     }
 
     public Put getPut(HBase base){

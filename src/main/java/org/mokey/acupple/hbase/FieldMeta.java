@@ -1,7 +1,7 @@
 package org.mokey.acupple.hbase;
 
 import org.apache.hadoop.hbase.util.Bytes;
-import org.mokey.acupple.hbase.annotations.Entity;
+import org.mokey.acupple.dashcam.hbase.annotations.Entity;
 
 import java.lang.reflect.Field;
 
@@ -16,6 +16,7 @@ public class FieldMeta {
     private int ttl;
     private HType type;
     private boolean valid = false;
+    private boolean increment = false;
 
     public FieldMeta(Field field){
         this.field = field;
@@ -33,7 +34,7 @@ public class FieldMeta {
             }else {
                 this.qualifier = Bytes.toBytes(field.getName());
             }
-
+            this.increment = entity.increment();
             this.type = HType.parse(field.getType());
             this.valid = true;
         }catch (Exception e){
@@ -63,6 +64,10 @@ public class FieldMeta {
 
     public byte[] getQualifier() {
         return qualifier;
+    }
+
+    public boolean isIncrement() {
+        return increment;
     }
 
     public boolean isValid(){

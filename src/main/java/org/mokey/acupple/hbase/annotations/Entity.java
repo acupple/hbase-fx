@@ -14,4 +14,5 @@ public @interface Entity {
     String family();
     int ttl() default 15552000; //6个月
     String name() default "";
+    boolean increment() default false;
 }
