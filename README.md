@@ -1,5 +1,6 @@
 # hbase-fx
 HBase-fx is a simple hbase ORM framework, which can be used to:
+
 1. create table if not exists
 2. delete table
 3. IINSERT, INCREMENT, GET, SEARCH, SCAN
