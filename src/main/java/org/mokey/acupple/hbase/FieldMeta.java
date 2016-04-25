@@ -1,14 +1,16 @@
 package org.mokey.acupple.hbase;
 
 import org.apache.hadoop.hbase.util.Bytes;
-import org.mokey.acupple.dashcam.hbase.annotations.Entity;
+import org.mokey.acupple.hbase.annotations.Entity;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
 /**
  * Created by enousei on 3/10/16.
  */
-public class FieldMeta {
+class FieldMeta {
     private Field field;
     private byte[] hfamily;
     private String family;
@@ -17,6 +19,8 @@ public class FieldMeta {
     private HType type;
     private boolean valid = false;
     private boolean increment = false;
+    private HType keyType;
+    private HType valueType;
 
     public FieldMeta(Field field){
         this.field = field;
@@ -36,6 +40,12 @@ public class FieldMeta {
             }
             this.increment = entity.increment();
             this.type = HType.parse(field.getType());
+            if(this.type == HType.MAP){
+                ParameterizedType pt = (ParameterizedType)field.getGenericType();
+                Type[] types = pt.getActualTypeArguments();
+                this.keyType = HType.parse((Class) types[0]);
+                this.valueType = HType.parse((Class) types[1]);
+            }
             this.valid = true;
         }catch (Exception e){
             e.printStackTrace();
@@ -60,6 +70,14 @@ public class FieldMeta {
 
     public HType getType() {
         return type;
+    }
+
+    public HType getKeyType() {
+        return keyType;
+    }
+
+    public HType getValueType() {
+        return valueType;
     }
 
     public byte[] getQualifier() {

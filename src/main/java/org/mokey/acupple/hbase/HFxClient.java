@@ -156,7 +156,7 @@ public class HFxClient {
         return list;
     }
 
-    public void deleteTable(Class<HBase> clazz) throws Exception{
+    public void deleteTable(Class<? extends HBase> clazz) throws Exception{
         TableMeta tableMeta = getTableMeta(clazz);
         try(Admin admin = connection.getAdmin()) {
             if(admin.tableExists(tableMeta.getHtableName())){

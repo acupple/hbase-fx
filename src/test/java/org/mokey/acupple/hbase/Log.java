@@ -102,7 +102,7 @@ public class Log implements HBase {
                 timeBytes, logIdBytes);
     }
 
-    public static void main(String[] args){
+    public static void main(String[] args) throws Exception{
         HFxClient hFxClient = new HFxClient("127.0.0.1:2181", "/hbase");
         hFxClient.createTable(Log.class);
         Log log = new Log();
